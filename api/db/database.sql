@@ -1,24 +1,6 @@
-
-CREATE TABLE cGroups(
-	idCGroup varchar(36) primary key,
-    referenceCode int not null,
-    label varchar(50) not null,
-    nameContact varchar(50),
-    numberContact varchar(50),
-    email varchar(50),
-    password char(32),
-    createdAt datetime default CURRENT_TIMESTAMP(),
-    updatedAt datetime ON UPDATE CURRENT_TIMESTAMP()
-);
-
-
 CREATE TABLE stores(
     idStore varchar(36) primary key,
-    referenceCode int not null,
-	idCGroup varchar(36) not null,
     label varchar(50) not null,
-    instructions text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not null,
-    footer text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     nameContact varchar(50),
     numberContact varchar(50),
     cnpj varchar(50),
@@ -31,69 +13,83 @@ CREATE TABLE stores(
     uf varchar(50),
     cep varchar(50),
     createdAt datetime default CURRENT_TIMESTAMP(),
-    updatedAt datetime ON UPDATE CURRENT_TIMESTAMP(),
-    FOREIGN KEY (idCGroup) REFERENCES cGroups(idCGroup)
+    updatedAt datetime ON UPDATE CURRENT_TIMESTAMP()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `stores` (`idStore`,`label`) VALUES 
+    ('b9f1901b-269e-11ef-8f5a-d92739a69807','Loja Admin');
+
+CREATE TABLE `users` (
+    `idUser` varchar(36) NOT NULL PRIMARY KEY,
+    `idStore` varchar(36) NOT NULL,
+    `name` varchar(50) NOT NULL,
+    `email` varchar(50) NOT NULL,
+    `password` char(32) NOT NULL,
+    `permition` int not null,
+    `createdAt` datetime default CURRENT_TIMESTAMP(),
+    `updatedAt` datetime ON UPDATE CURRENT_TIMESTAMP(),
+    FOREIGN KEY (idStore) REFERENCES stores(idStore)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `users`
+--
+
+INSERT INTO `users` (`idUser`, `name`, `email`, `password`, `permition`,`idStore`) VALUES
+(   '6e5ac729-0489-11ef-9412-e66239f625d6',
+    'Administrador', 
+    'felipe@hotmail.com', 
+    '5c02f67a1da6b9b24c87a914d44c7470',
+    '1',
+    'b9f1901b-269e-11ef-8f5a-d92739a69807'
 );
 
+CREATE TABLE clients(
+    idClient varchar(36) primary key not null,
+    idStore varchar(36) NOT NULL,
+    phone varchar(50) NOT NULL,
+    name varchar(100) NOT NULL,
+    birth date,
 
-CREATE TABLE groups(
-    idGroup varchar(36) primary key not null,
-    referenceCode int not null,
-    idStore varchar(36) not null,
-    label varchar(50) not null,
-    phoneId varchar(50) not null,
-    link text not null,
-    adminPhones longtext,
-    botStatus boolean not null,
-    status boolean not null,
-    queueUpdateList datetime DEFAULT CURRENT_TIMESTAMP(),
-    triggerMessage varchar(100),
-    redirectLink text,
-    createdAt datetime default CURRENT_TIMESTAMP(),
+    /*ENDERECO*/
+    endereco varchar(50),
+    numero varchar(50),
+    bairro varchar(50),
+    cidade varchar(50),
+    uf varchar(50),
+    cep varchar(50),
+
+    createdAt datetime not null default CURRENT_TIMESTAMP(),
     updatedAt datetime ON UPDATE CURRENT_TIMESTAMP(),
     FOREIGN KEY (idStore) REFERENCES stores(idStore)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE raffles(
-    idRaffle varchar(36) primary key not null,
-    referenceCode int not null,
-    idGroup varchar(36) not null,
-    status boolean not null,
-    raffleDate DATE,
-    price float not null,
-    numbers int not null,
+CREATE TABLE quotes(
+    idQuote varchar(36) primary key not null,
+    idStore varchar(36) NOT NULL,
+    idUserRegister varchar(36) NOT NULL,
+    idClient varchar(36) not null,
+
+    status int not null default 1,
+    description text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not null,
     instructions text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-    footer text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-    buyLimit int,
-    resultLink text,
-    percentageNotify int,
-    flatNotify int,
-    createdAt datetime default CURRENT_TIMESTAMP(),
-    updatedAt datetime ON UPDATE CURRENT_TIMESTAMP(),
-    FOREIGN KEY (idGroup) REFERENCES groups(idGroup)
-);
+    price float,
 
-
-CREATE TABLE awards(
-    idAward varchar(36) primary key not null,
-    idRaffle varchar(36) not null,
-    referenceCode int not null,
-    description longtext not null,
-    drawnNumber int,
-    createdAt datetime default CURRENT_TIMESTAMP(),
+    createdAt datetime not null default CURRENT_TIMESTAMP(),
     updatedAt datetime ON UPDATE CURRENT_TIMESTAMP(),
-    FOREIGN KEY (idRaffle) REFERENCES raffles(idRaffle)
-);
+    FOREIGN KEY (idStore) REFERENCES stores(idStore),
+    FOREIGN KEY (idUserRegister) REFERENCES users(idUser),
+    FOREIGN KEY (idClient) REFERENCES clients(idClient)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE participants(
-    idParticipant varchar(36) primary key not null,
-    idRaffle varchar(36) not null,
-    phoneId varchar(50) not null,
-    drawnNumber int not null,
-    paid boolean not null default 0,
-    name varchar(50),
-    pix longtext,
-    createdAt datetime default CURRENT_TIMESTAMP(),
-    updatedAt datetime ON UPDATE CURRENT_TIMESTAMP(),
-    FOREIGN KEY (idRaffle) REFERENCES raffles(idRaffle)
-);
+CREATE TABLE notes(
+    idNote varchar(36) primary key not null,
+    idQuote varchar(36) NOT NULL,
+    idUserRegister varchar(36) NOT NULL,
+
+    description text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not null,
+
+    createdAt datetime not null default CURRENT_TIMESTAMP(),
+    FOREIGN KEY (idQuote) REFERENCES quotes(idQuote),
+    FOREIGN KEY (idUserRegister) REFERENCES users(idUser)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
