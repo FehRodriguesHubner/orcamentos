@@ -1,6 +1,6 @@
 <?php
-////error_reporting(E_ALL);
-////ini_set('display_errors', 1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 require_once(__DIR__ . '/../../config/session-config.php');
 require_once(__DIR__ . '/../../config/https-redirect.php');
@@ -22,10 +22,13 @@ foreach($array_validate as $input){
 
 // Preparação da consulta
 $sql = "SELECT 
-    idUser,
-    `name`
-    FROM users
-    WHERE email = ? AND password = md5(?) 
+    u.idUser,
+    s.idStore,
+    u.`name`,
+    s.`label` as storeName
+    FROM users u
+    INNER JOIN stores s USING(idStore)
+    WHERE u.email = ? AND u.password = md5(?) 
     LIMIT 1;
 ";
 
@@ -58,11 +61,14 @@ $row = mysqli_fetch_assoc($result);
 
 $idUser = $row['idUser'];
 $name = $row['name'];
+$idStore = $row['idStore'];
+$storeName = $row['storeName'];
 
 $_SESSION['idUser'] = $idUser;
 $_SESSION['name'] = $name;
 $_SESSION['email'] = $email;
-$_SESSION['email'] = $email;
+$_SESSION['idStore'] = $idStore;
+$_SESSION['storeName'] = $storeName;
 
 // Fechar a declaração
 mysqli_stmt_close($stmt);
@@ -72,5 +78,7 @@ die(json_encode([
     'message' => 'Login realizado com sucesso',
     'name' => $name,
     'email' => $email,
-    'idUser' => $idUser
+    'idUser' => $idUser,
+    'idStore' => $idStore,
+    'storeName' => $storeName,
 ]));

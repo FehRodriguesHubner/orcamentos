@@ -49,76 +49,6 @@ function getUUID(){
     return $row['id'];
 }
 
-function capturaSequencial($type,$typeId,$id){
-    global $db;
-    $sql = "SELECT MAX(referenceCode) as referenceCode FROM {$type} WHERE {$typeId} = '{$id}';";
-    $result = mysqli_query($db, $sql);
-    if (!$result) {
-        return (['success' => false,'message' => 'Erro ao buscar ordenação sequencial', 'debug' => mysqli_error($db)]);
-    }
-
-    if(mysqli_num_rows($result) < 1){
-        return (['success' => true, 'referenceCode' => 0]);
-    }
-
-    $row = mysqli_fetch_assoc($result);
-
-    return (['success' => true, 'referenceCode' => intval($row['referenceCode'])]);
-}
-
-
-function sendZAPIReq($payload,$encode = true)
-{
-    global $messageEndpoint, $clientToken;
-    
-    if($messageEndpoint == null){
-        return false;
-    }
-
-    $url = $messageEndpoint;
-    $data = $payload;
-
-    
-    $jsonData = $encode ? json_encode($data) : $data;
-    $ch = curl_init($url);
-    
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        "Content-Type: application/json",
-        "Client-Token: {$clientToken}"
-    ));
-
-    $response = curl_exec($ch);
-
-    if ($response === false) {
-        echo 'cURL Error: ' . curl_error($ch);
-    }
-
-    
-
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    curl_close($ch);
-    
-    $responseData = json_decode($response, true);
-
-    if ($responseData) {
-        return [
-            'status' => $httpCode,
-            'response' => $responseData
-        ];
-    } else {
-        return [
-            'status' => $httpCode,
-            'url' => $url,
-            'response' => [
-                'message' => "Ocorreu um erro ao verificar o retorno da solicitação"
-            ]
-        ];
-    }
-}
 
 function sendReq($endpoint,$payload, $method = "POST", $timeout = 10)
 {
@@ -142,9 +72,9 @@ function sendReq($endpoint,$payload, $method = "POST", $timeout = 10)
 
     if ($response === false) {
         return [
-            'status' => 200,
+            'status' => 500,
             'response' => [
-                'message' => "Confira a reserva na listagem de participantes"
+                'message' => "Tempo de solicitação expirado."
             ]
         ];
     }
@@ -171,4 +101,56 @@ function sendReq($endpoint,$payload, $method = "POST", $timeout = 10)
             ]
         ];
     }
+}
+
+function validate($arrayValidate){
+    foreach($arrayValidate as $input){
+        if($input == null){
+            error('Verifique os dados informados e tente novamente.',400);
+        }
+    }
+}
+
+function procuraCliente($phone){
+    global $idStore, $db;
+    $sql = "SELECT idClient FROM clients WHERE idStore = '{$idStore}' AND phone = '{$phone}';";
+    $result = mysqli_query($db,$sql);
+    if(!$result) error('Falha ao buscar por registros do cliente',500);
+    if(mysqli_num_rows($result) < 1) return false;
+    $row = mysqli_fetch_assoc($result);
+    return $row;
+}
+
+function registraCliente($phone,$name){
+    global $idStore, $db;
+
+    $idClient = getUUID();
+
+    $sql = "INSERT INTO clients(
+        idClient,
+        idStore,
+        phone,
+        name
+    ) VALUES(
+        ?,
+        ?,
+        ?,
+        ?
+    );";
+
+    $stmt = mysqli_prepare($db, $sql);
+
+    if ($stmt) {
+        // Associação de parâmetros
+        mysqli_stmt_bind_param($stmt, "ssss", $idClient,$idStore,$phone,$name);
+        // Execução da consulta
+        if (!mysqli_stmt_execute($stmt)) {
+            error('Falha ao executar cadastro do cliente');
+        }
+
+    } else {
+        error('Falha ao preparar cadastro do cliente');
+    }
+
+    return $idClient;
 }

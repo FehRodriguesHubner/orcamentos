@@ -90,10 +90,12 @@ window.addEventListener('DOMContentLoaded', function () {
             name = jsonResoponse.name;
             userLevel  = jsonResoponse.userLevel;
             idUser  = jsonResoponse.idUser;
+            storeName  = jsonResoponse.storeName;
 
             setCookie('email',email,1);
             setCookie('name',name,1);
             setCookie('idUser',idUser,1);
+            setCookie('storeName',storeName,1);
             
             window.location.href = baseAdminUrl + 'home';
         }

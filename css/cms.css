@@ -176,6 +176,7 @@
 	background-color: white;
 	border-radius: 16px;
 	border: 1px solid var(--color-gray-300);
+	height: fit-content;
 }
 
 .name {
@@ -929,6 +930,10 @@ button.btn-copy svg {
 	background-image: url(../img/search.png);
 	background-repeat: no-repeat;
 	background-position: 8px center;
+}
+
+.input-note{
+	background-color: #00800021;
 }
 
 .contacts-messages {

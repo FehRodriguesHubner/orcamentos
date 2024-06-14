@@ -259,6 +259,7 @@ body {
 }
 
 textarea.input-default{
+    width: 100%;
     height: 100px;
     min-height: 44px;
     transition: unset;
@@ -300,6 +301,10 @@ textarea.input-default{
     height: 350px;
     border-radius: 16px;
     border: 4px solid var(--bs-blue);
+    width: 100%;
+}
+
+.input-container{
     width: 100%;
 }
 

@@ -2,13 +2,11 @@ RewriteEngine On
 
 RewriteRule ^login$            pages/auth/login.php
 
-RewriteRule ^$                                  pages/grupos-comerciais/list.php
-RewriteRule ^home$                              pages/grupos-comerciais/list.php
-RewriteRule ^grupos-comerciais$                 pages/grupos-comerciais/list.php
-RewriteRule ^grupos-comerciais/cadastrar$       pages/grupos-comerciais/create.php
-RewriteRule ^grupos-comerciais/editar/(.*)$     pages/grupos-comerciais/edit.php?id=$1
-
-RewriteRule ^grupos-comerciais/acessar/(.*)$     pages/lojas/list.php?id=$1
+RewriteRule ^$                           pages/orcamentos/list.php
+RewriteRule ^home$                       pages/orcamentos/list.php
+RewriteRule ^orcamentos$                 pages/orcamentos/list.php
+RewriteRule ^orcamentos/cadastrar$       pages/orcamentos/create.php
+RewriteRule ^orcamentos/editar/(.*)$     pages/orcamentos/edit.php?id=$1
 
 ## LOJAS
 
