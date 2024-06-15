@@ -93,3 +93,22 @@ CREATE TABLE notes(
     FOREIGN KEY (idQuote) REFERENCES quotes(idQuote),
     FOREIGN KEY (idUserRegister) REFERENCES users(idUser)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE customFields(
+	idCustomField varchar(36) primary key,
+    tableReference int not null,
+    label varchar(50) not null,
+    required boolean not null,
+    searchable boolean not null,
+    editable boolean not null,
+    dataType varchar(50),
+    dataMask varchar(50)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE customFieldContents (
+	idCustomFieldContent varchar(36) primary key,
+    idCustomField varchar(36) not null,
+    idTableReference varchar(36) not null,
+    content text not null,
+    FOREIGN KEY (idCustomField) REFERENCES customFields(idCustomField)
+);
