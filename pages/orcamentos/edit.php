@@ -110,11 +110,11 @@ require_once __DIR__ . '/../../config/init-config.php';
                     <form id="form-notes" class="mt-3">
                         <div class="wrapper-infos-form">
                             <section class="p-3 pt-md-0 pt-0 p-md-4">
-                                <div class="row" id="notes-row">
+                                <div class="row" id="notesRow">
                                 </div>
                                 <div class="input-group">
                                     <div class="input-container w-100">
-                                        <textarea placeholder="Faça aqui uma nova anotação..." class="input-default input-note w-100"></textarea>
+                                        <textarea id="txtNote" placeholder="Faça aqui uma nova anotação..." class="input-default input-note w-100"></textarea>
                                         <small class="input-message"></small>
                                     </div>
                                 </div>
@@ -129,34 +129,6 @@ require_once __DIR__ . '/../../config/init-config.php';
                 </div>
             </section>
         </section>
-
-
-        <div id="modal-contatos" class="modal fade" tabindex="-1">
-            <!-- Scrollable modal -->
-            <div aria-hidden="true" class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalContatosTitle">Exportar contatos</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-
-                            <p>
-                                Analise os dados da exportação abaixo.
-                            </p>
-
-                            <table id="table-contatos" class="table table-striped w-100"></table>
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </main>
     <?php
         foreach($_GET as $key => $value){

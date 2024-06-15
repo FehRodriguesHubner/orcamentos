@@ -1773,6 +1773,21 @@ button.button-default.border-gray-800.color-gray-800.bg-transparent:hover {
 
 
 /* END CHECKBOX */
+.note{
+    background-color: rgb(231, 231, 118);
+    padding: 10px;
+    min-height: 101px;
+    border-radius: 8px;
+}
+
+.note-content{
+    white-space: preserve-breaks;
+}
+
+.note small{
+    font-size: 12px;
+    font-style: italic;
+}
 
 
 @media only screen and (min-width:1400px) {

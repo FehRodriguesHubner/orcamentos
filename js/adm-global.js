@@ -3,6 +3,51 @@ var baseAdminUrl, apiUrl = null;
 baseAdminUrl = $('#url').val();
 apiUrl = `${baseAdminUrl}api`;
 
+async function fetchReq(endpoint, body = {}, method = 'POST'){
+    return new Promise(async function (res, rej) {
+
+        let fetchResponse = await fetch(apiUrl + '/' + endpoint, {
+            method,
+            headers: {
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        var jsonRequestData;
+
+        try {
+
+            jsonRequestData = await fetchResponse.json();
+
+        } catch (except) {
+            console.log(except);
+            dispatchPopup('error','Ops! ocorreu um erro.','Não foi possível ao verificar o resultado de sua ação. Por favor, tente novamente mais tarde.');
+            rej({except});
+            return;
+
+        }
+
+        if (fetchResponse.status != 200) {
+            dispatchPopup('warning','Atenção',jsonRequestData.message);
+            rej(json);
+        }
+
+        res(jsonRequestData);
+    });
+
+}
+
+function popupLoading(text = 'Aguarde'){
+    return dispatchPopup('info','Processando...',text,{
+        didOpen: () => {
+            Swal.showLoading()
+        },
+        showConfirmButton: false,
+        allowOutsideClick: false
+    });
+}
+
 function fetchUserData() {
     return new Promise(async function (res, rej) {
 

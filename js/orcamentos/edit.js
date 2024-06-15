@@ -19,6 +19,7 @@ window.addEventListener('DOMContentLoaded', async function () {
     ///////////////////////////
 
     renderDefaultForm();
+    renderNoteForm();
 
 });
 
@@ -77,6 +78,50 @@ $(function(){
             history.back();
         });
 
+    });
+
+    $('#form-notes').on('submit', async function(ev){
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+
+        const txtNote = $('#txtNote');
+        if (!inputValidation(txtNote.val().trim(),null)) {
+            dispatchPopup('warning','Atenção', 'Preencha o campo de anotações antes de prosseguir.');
+            return;
+        }
+
+        popupLoading();
+        
+        const idQuote = $('#get_id').val();
+        try{
+            jsonResponse = await fetchReq(`notas/create.php`,{
+                "idQuote": idQuote,
+                "description": txtNote.val().trim()
+            });
+        }catch(except){ console.log(except); return;}
+
+        //dispatchPopup('success','Pronto!', 'Anotação inserida!');
+        txtNote.val('');
+        Swal.close();
+        renderNoteForm();
+
+    });
+
+    $(document).on('click','[data-deletar-note]',async function(){
+        const idNote = $(this).attr('data-id');
+        dispatchPopup('warning','Atenção','Tem certeza que deseja excluir essa nota?',{showCancelButton:true,cancelButtonText:'Cancelar',confirmButtonText:'Deletar'}).then(async function(res){
+            if(res.isConfirmed){
+                popupLoading();
+                try{
+                    jsonResponse = await fetchReq(`notas/delete.php`,{
+                        "idNote": idNote
+                    });
+                }catch(except){ console.log(except); return;}
+        
+                renderNoteForm();
+                Swal.close();
+            }
+        });
     });
 
 })
@@ -224,4 +269,35 @@ async function renderDefaultForm(){
         }
     });
     
+}
+async function renderNoteForm(){
+    const idQuote = $('#get_id').val();
+    let jsonResponse;
+    try{
+        jsonResponse = await fetchReq(`notas/list.php`,{
+            "idQuote": idQuote
+        });
+    }catch(except){ console.log(except); return;}
+
+    const notesRow = $('#notesRow');
+    notesRow.fadeOut(0);
+    notesRow.empty();
+
+    for(let note of jsonResponse.results){
+        notesRow.append(`
+            <div class="col-12">
+                <div class="note mb-3 d-flex flex-column justify-content-between" title="Criado por: ${note.name}">
+                    <div class="note-content">${note.description}</div>
+                    <div class="mt-3 d-flex justify-content-between aling-items-center">
+                        <small> ${note.name} - ${formatDateTime(note.createdAt)}</small>
+                        <button data-id="${note.idNote}" data-deletar-note title="Deletar anotação" type="button" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+    notesRow.fadeIn();
+
 }
