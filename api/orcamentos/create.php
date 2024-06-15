@@ -16,6 +16,8 @@ $price = $json['price'];
 if(!empty($price)){
     $price = str_replace('.','',$price);
     $price = str_replace(',','.',$price);
+}else{
+    $price = null;
 }
 
 validate([

@@ -1,6 +1,7 @@
 const pageSlug = 'orcamentos';
 const pageName = 'Orçamentos';
 const campos = [
+    {label:'Abertura', key: 'createdAt'},
     {label:'Nome do Cliente', key: 'name'},
     {label:'Telefone do Cliente', key: 'phone'},
     {label:'Descrição', key: 'description'},
@@ -116,17 +117,74 @@ function fetchDefaultDelete(id) {
 $(function(){
     $(document).on('click','[data-action="delete"]', async function(){
         let id = $(this).attr('data-id');
+        dispatchPopup('warning','Atenção','Tem certeza que deseja arquivar este orçamento/serviço?',{showCancelButton:true,cancelButtonText:'Cancelar'}).then(async function(swalRes){
+            if(!swalRes.isConfirmed) return;
+            popupLoading();
+    
+            try{
+                await fetchDefaultDelete(id);
+            }catch(e){
+                console.log('delete falhou:',id)
+                return;
+            }
+    
+            renderDefault();
 
-        popupLoading();
+        })
 
-        try{
-            await fetchDefaultDelete(id);
-        }catch(e){
-            console.log('delete falhou:',id)
-            return;
-        }
+    });
+    $(document).on('click','[data-action="open"]', async function(){
+        let id = $(this).attr('data-id');
+        dispatchPopup('warning','Atenção','Tem certeza que deseja reabrir este orçamento?',{showCancelButton:true,cancelButtonText:'Cancelar'}).then(async function(swalRes){
+            console.log(swalRes.isConfirmed);
+            if(!swalRes.isConfirmed) return;
+            popupLoading();
+            console.log(id);
+            try{
+                jsonResponse = await fetchReq(`orcamentos/open.php`,{
+                    "id": id
+                });
+            }catch(except){ console.log(except); return;}
+    
+            renderDefault();
+            Swal.close();
+        });
 
-        renderDefault();
+    });
+    $(document).on('click','[data-action="aprove"]', async function(){
+        let id = $(this).attr('data-id');
+        dispatchPopup('warning','Atenção','Tem certeza que deseja aprovar este orçamento?',{showCancelButton:true,cancelButtonText:'Cancelar'}).then(async function(swalRes){
+            console.log(swalRes.isConfirmed);
+            if(!swalRes.isConfirmed) return;
+            popupLoading();
+            console.log(id);
+            try{
+                jsonResponse = await fetchReq(`orcamentos/aprove.php`,{
+                    "id": id
+                });
+            }catch(except){ console.log(except); return;}
+    
+            renderDefault();
+            Swal.close();
+        });
+
+    });
+    $(document).on('click','[data-action="close"]', async function(){
+        let id = $(this).attr('data-id');
+        dispatchPopup('warning','Atenção','Tem certeza que deseja encerrar este serviço?',{showCancelButton:true,cancelButtonText:'Cancelar'}).then(async function(swalRes){
+            console.log(swalRes.isConfirmed);
+            if(!swalRes.isConfirmed) return;
+            popupLoading();
+            console.log(id);
+            try{
+                jsonResponse = await fetchReq(`orcamentos/close.php`,{
+                    "id": id
+                });
+            }catch(except){ console.log(except); return;}
+    
+            renderDefault();
+            Swal.close();
+        });
 
     });
 });
@@ -211,33 +269,60 @@ async function renderDefault(){
 
             for(let campo of campos){
                 let field = '--';
+                let sortValue = null;
 
                 // CUSTOM FIELDS //
                 switch(campo.key){
                     case 'price':
+                        sortValue = 0;
                         if (row[campo.key] != null) {
-
+                            sortValue = row[campo.key];
                             field = `R$ ${parseFloat(row[campo.key]).toLocaleString('pt-br', { minimumFractionDigits: 2 })}`;
                         }
                         break;
+                    case 'createdAt':
+                        if (row[campo.key] != null) {
+                            sortValue = row[campo.key];
+                            field = formatDateTime(row[campo.key]);
+                        }
+                        break;
                     case 'actions':
+
+                        const btnOpen = `
+                            <button data-action="open" title="Reabrir" data-id="${row.idQuote}" class="btn btn-secondary d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-box-archive"></i>
+                            </button>
+                        `;
+
+                        const btnDelete = `
+                            <button data-action="delete" title="Deletar" data-id="${row.idQuote}" class="btn btn-danger d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-box-archive"></i>
+                            </button>
+                        `;
+
+                        const btnAprove = `
+                            <button data-action="aprove" title="Aprovar" data-id="${row.idQuote}" class="btn btn-warning d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-dollar"></i>
+                            </button>
+                        `;
+
+                        const btnClose = `
+                            <button data-action="close" title="Concluír" data-id="${row.idQuote}" class="btn btn-success d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-check"></i>
+                            </button>
+                        `;
+                        
+
                         field = `
                         <div class="d-flex justify-content-end">
-                            <button data-action="delete" title="Deletar" data-id="${row.idQuote}" class="btn btn-danger d-flex justify-content-between align-items-center me-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                </svg>
-                            </button>
-                            <a title="Editar" href="${baseAdminUrl}${pageSlug}/editar/${row.idQuote}" class="btn btn-secondary d-flex justify-content-between align-items-center me-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
-                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                                </svg>
-                            </a>
-                            <a title="Acessar" href="${baseAdminUrl}${pageSlug}/acessar/${row.idQuote}" class="me-2">
-                                <button class="btn btn-success d-flex">
-                                    <i class="fa fa-arrow-right"></i>
-                                </button>
-                            </a>       
+                            ${row.status == 0 ? btnOpen     : ''}
+                            ${row.status != 0 ? btnDelete   : ''}
+                            ${row.status == 1 ? btnAprove   : ''}
+                            ${row.status == 2 ? btnClose    : ''}
+
+                            <a title="Editar" href="${baseAdminUrl}${pageSlug}/editar/${row.idQuote}" class="btn btn-info d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-eye"></i>
+                            </a>     
                         </div>
                         
                         `;
@@ -251,9 +336,10 @@ async function renderDefault(){
                         break;
                 }
 
+                sortValue = sortValue == null ? '' : `data-order="${sortValue}"`;
 
                 let strField = `
-                    <td>
+                    <td ${sortValue}>
                         <div>
                             ${field}
                         </div>
