@@ -1,3 +1,5 @@
+const TABLE_REFERENCE_QUOTES = 1;
+const TABLE_REFERENCE_CLIENTS = 2;
 // loader
 window.addEventListener('load', function () {
     setTimeout(() => { document.querySelector("#page-loader").classList.add('closed'); }, 500)
@@ -7,118 +9,12 @@ window.addEventListener(`DOMContentLoaded`, function(){
 
     /* Máscaras de formulário */
 
-    if(document.querySelector(`.mask-data`)){
-
-        let arMaskData = document.querySelectorAll(`.mask-data`)
-        
-        for (const e of arMaskData) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`##/##/####`, e, event, true)
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-cpf`)){
-
-        let arMaskCPF = document.querySelectorAll(`.mask-cpf`)
-        
-        for (const e of arMaskCPF) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`###.###.###-##`, e, event, true)
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-cnpj`)){
-
-        let arMaskCNPJ = document.querySelectorAll(`.mask-cnpj`)
-        
-        for (const e of arMaskCNPJ) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`##.###.###/####-##`, e, event, true)
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-document`)){
-
-        let arMaskDocument = document.querySelectorAll(`.mask-document`)
-        
-        for (const e of arMaskDocument) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                let l = e.value.length
-
-                if(l > 14){
-
-                    mascara(`##.###.###/####-##`, e, event, true)
-                }else{
-
-                    mascara(`###.###.###-##`, e, event, true)
-                }
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-cep`)){
-
-        let arMaskCEP = document.querySelectorAll(`.mask-cep`)
-        
-        for (const e of arMaskCEP) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`#####-###`, e, event, true)
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-phone`)){
-
-        let arMaskPhone = document.querySelectorAll(`.mask-phone`)
-        
-        for (const e of arMaskPhone) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                let l = e.value.length
-
-                if(l > 14){
-
-                    mascara(`(##) #####-####`, e, event, true)
-                }else{
-
-                    mascara(`(##) ####-####`, e, event, true)
-                }
-
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-card-number`)){
-
-        let arMaskCardNumber = document.querySelectorAll(`.mask-card-number`)
-        
-        for (const e of arMaskCardNumber) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`#### #### #### ####`, e, event, true)
-            })
-        }
-    }
-
-    if(document.querySelector(`.mask-card-cod`)){
-
-        let arMaskCardCod = document.querySelectorAll(`.mask-card-cod`)
-        
-        for (const e of arMaskCardCod) {
-            
-            e.addEventListener(`keyup`, (event)=>{
-                mascara(`####`, e, event, true)
-            })
-        }
-    }
+    $(document).on('focus','input', function(){
+        cleanInputError(this);
+    });
+    $(document).on('change','select', function(){
+        cleanInputError(this);
+    });
 
     $('[data-btn-back]').on('click', function(){
         history.back();
@@ -449,8 +345,28 @@ function maskInputs(){
     };
 
     $('[data-mask="phone"]').mask(SPMaskBehavior, spOptions);
+
+    $('[data-mask="placaCarro"]').mask('AAAAAAA', {
+        'onKeyPress': function(val, e, field, options) {
+            field.val(val.toUpperCase());
+        }
+    });
 }
 
+function renderRequired(){
+    $('[id^="input-"]').each(function(){
+        if($(this).attr('data-optional') != 'true'){
+            const inputGroup = $(this).closest('.input-group');
+
+            const label = inputGroup.find(' > label');
+
+            if(label.attr('data-required') == 'true') return;
+
+            label.attr('data-required',true);
+            label.html(`<b>${label.text()}*</b>`); 
+        }
+    });
+}
 
 // INPUTS FUNCTIONS
 
@@ -657,40 +573,203 @@ function validateEmail(input) {
 
 }
 
-async function renderInputs(arrayInputs){
+const FIELD_TYPE_RADIO          = 'radio';
+const FIELD_TYPE_SELECT         = 'select';
+const FIELD_TYPE_TEXTAREA       = 'textarea';
+const FIELD_TYPE_TEXT           = 'text';
+const FIELD_TYPE_MONEY          = 'money';
+const FIELD_TYPE_PLACA_CARRO    = 'placaCarro';
+const FIELD_TYPE_PHONE          = 'phone';
 
-    for(let index in arrayInputs){
+async function renderInput(campo,values = null){
+    const key = campo.key;
 
-        let jsonInput = arrayInputs[index];
+    const type = campo.type;
+    const content = campo.content;
 
-        let input = jsonInput.input;
+    switch(type){
+        case FIELD_TYPE_RADIO:
+            $('#inputs-row').append(getRadioHTML(campo));
+            console.log(values);
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            console.log(campo.key,$(`[name="input-${campo.key}"][value="${values[campo.key]}"]`));
+            $(`[name="input-${campo.key}"][value="${values[campo.key]}"]`).prop('checked',true).change();
+                
+            break;
 
-        input.value = jsonInput.value;
+        case FIELD_TYPE_SELECT:
+            $('#inputs-row').append(getSelectHTML(campo));
 
-        if(!jsonInput.readonly){
-            input.removeAttribute('readonly');
-        }
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            $(`#input-${campo.key}`).val(values[campo.key]);
 
-        input.dispatchEvent(new Event('input'));
-        input.closest('.placeholder-input').classList.remove('placeholder-input');
+            break;
+
+        case FIELD_TYPE_TEXTAREA:
+            $('#inputs-row').append(getTextareaHTML(campo));
+
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            $(`#input-${campo.key}`).val(values[campo.key]);
+
+            break;
+
+        case FIELD_TYPE_MONEY:
+            $('#inputs-row').append(getTextHTML(campo));
+            
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            $(`#input-${campo.key}`).val(parseFloat(values[campo.key]).toLocaleString('pt-br',{minimumFractionDigits: 2}));
+
+            break;
+
+        case FIELD_TYPE_PLACA_CARRO:
+            campo.length = 7;
+            $('#inputs-row').append(getTextHTML(campo));
+            
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            $(`#input-${campo.key}`).val(values[campo.key]);
+
+            break;
+
+        default:
+            $('#inputs-row').append(getTextHTML(campo));
+
+            // valor
+            if(values == null) break;
+            if(values[campo.key] == null) break;
+            $(`#input-${campo.key}`).val(values[campo.key]);
+
+            break;
+
+    }
+
+    if(campo.required === false || campo.required == 0) $(`#input-${campo.key}`).attr('data-optional','true');
+    if(campo.type != null) {
+        $(`#input-${campo.key}`).attr('data-type',campo.type);
+        $(`#input-${campo.key}`).attr('data-mask',campo.type);
+    } 
+    if(campo.placeholder != null) {
+        $(`#input-${campo.key}`).attr('placeholder',campo.placeholder);
+    }
+
+    if(campo.readonly === true || (campo.editable == 0 && values[campo.key] != null )){
+        $(`#input-${campo.key}`)
+        .attr('disabled','true')
+        .attr('readonly','true')
+        .addClass('disabled');
     }
 
 }
 
+//DEFAULT INPUT GROUP TEMPLATE
+function getInputGroupHTML(label, inputHTML) {
+    return `
+        <div class="col-12">
+            <div class="input-group mb-3">
+                <label>${label}</label>
+                <div class="w-100">
+                    <div class="input-container">
+                        ${inputHTML}
+                        <small class="input-message"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
-async function populateSelect(results,targetInput,placeholder){
-    let option = document.createElement('option');
-    option.setAttribute('value', '');
-    option.innerHTML = placeholder;
-    targetInput.innerHTML = '';
-    targetInput.append(option);
+//INPUT RADIO TEMPLATE
+function getRadioHTML(campo){
 
-    for(let index in results){
-        let result = results[index];
-
-        let option = document.createElement('option');
-        option.setAttribute('value', result.id);
-        option.innerHTML = result.label;
-        targetInput.append(option);
+    const content = campo.content != null ? campo.content : [{label:'Sim',value:1},{label:'Não',value:0}];
+    
+    var inputHTML = "";
+    var checked = true;
+    for(let option of content){
+        inputHTML += getRadioFieldHTML(campo.key,option.value,checked,option.label);
+        checked = false;
     }
+
+    return getInputGroupHTML(campo.label, inputHTML);
+
+    function getRadioFieldHTML(key, value, isChecked, labelText) {
+        return `
+            <label class="rb-container">
+                <input ${isChecked ? 'checked' : ''} id="input-${key}${value ? '-' + value : ''}" value="${value}" type="radio" name="input-${key}" />
+                ${labelText}
+                <span class="rb-checkmark"></span>
+            </label>
+        `;
+    }
+    
+}
+
+//INPUT SELECT TEMPLATE
+function getSelectHTML(campo) {
+    
+    const content = campo.content != null ? campo.content : [{label:'Sim',value:1},{label:'Não',value:0}];
+    
+    var options = "";
+    for(let option of content){
+        options += getSelectOptionHTML(option.label, option.value);
+    }
+    const inputHTML = `<select class="input-default" id="input-${campo.key}">${options}</select>`;
+
+    return getInputGroupHTML(campo.label, inputHTML);
+
+    function getSelectOptionHTML(labelText, value) {
+        return `
+            <option value="${value}">${labelText}</option>
+        `;
+    }
+}
+
+//INPUT TEXTAREA TEMPLATE
+function getTextareaHTML(campo) {
+    const inputHTML = `<textarea maxlength="500" id="input-${campo.key}" type="text" class="input-default"></textarea>`;
+    return getInputGroupHTML(campo.label,inputHTML);
+}
+
+//INPUT TEXT 
+function getTextHTML(campo){
+    console.log(campo.key,campo.length)
+    const inputHTML = `<input maxlength="${campo.length > 0 ? campo.length : 50}" id="input-${campo.key}" type="text" class="input-default">`;
+    return getInputGroupHTML(campo.label,inputHTML);
+}
+
+
+
+
+function getCustomFields(tableReference){
+    return new Promise(async (res,rej) => {
+        let jsonResponse;
+
+        var endpoint;
+        switch(tableReference){
+            case TABLE_REFERENCE_QUOTES:
+                endpoint = 'campos-orcamento'
+                break;
+            case TABLE_REFERENCE_CLIENTS:
+                endpoint = 'clientes';
+                break;
+            default:
+                return null;
+                break;
+        }
+
+        try{
+            jsonResponse = await fetchReq(`${endpoint}/list.php`);
+        }catch(except){ console.log(except); rej(except); return;}
+
+        res(jsonResponse.results);
+    });
 }
