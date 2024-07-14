@@ -82,6 +82,27 @@ if ($stmt) {
    error('Erro ao preparar cadastro');
 }
 
+// customFields
+$tableReference = 1;
+$customFields = getCustomFields($tableReference);
+
+$sql = "SELECT idCustomFieldContent 
+    FROM customFieldContents 
+    WHERE idTableReference = '{$idQuote}'
+    AND idCustomField = '{$idCustomField}'
+;";
+if(!$result = mysqli_query($db,$sql)) error('Falha ao buscar dados personalizados');
+$currentCustomFields = [];
+while($row = mysqli_fetch_assoc($result)) $currentCustomFields[$row['idCustomField']] = $row;
+
+foreach($customFields as $customField){
+    $idCustomField = $customField['idCustomField'];
+    if($json[$idCustomField] === null) continue;
+
+    insertCustomField($idCustomField,$idQuote,$json[$idCustomField]);
+    
+}
+
 mysqli_commit($db);
 success();
 

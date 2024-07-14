@@ -1,13 +1,13 @@
 const pageSlug = 'orcamentos';
 const pageName = 'Orçamentos';
 const campos = [
-    {label:'Descrição do problema (Visível ao cliente na O.S)', key: 'description'},
-    {label:'Detalhamento de serviço (NÃO visível ao cliente na O.S)', key: 'instructions'},
-    {label:'Valor do orçamento', key: 'price'},
-
-    {label:'Nome do Cliente', key: 'name'},
-    {label:'Telefone do Cliente', key: 'phone'}
+    {label:'Descrição do problema (Visível ao cliente na O.S)', key: 'description', type: FIELD_TYPE_TEXTAREA},
+    {label:'Detalhamento de serviço (NÃO visível ao cliente na O.S)', key: 'instructions', type: FIELD_TYPE_TEXTAREA, required:false},
+    {label:'Valor do orçamento', key: 'price', type:FIELD_TYPE_MONEY},
+    {label:'Nome do Cliente', key: 'name', readonly:true},
+    {label:'Telefone do Cliente', key: 'phone', type: FIELD_TYPE_PHONE, readonly:true}
 ];
+
 
 window.addEventListener('DOMContentLoaded', async function () {
     renderUserDataReplace();
@@ -17,6 +17,16 @@ window.addEventListener('DOMContentLoaded', async function () {
     }]);
     renderPageActive(pageSlug);
     ///////////////////////////
+
+    var customFields;
+    try{
+        customFields = await getCustomFields(TABLE_REFERENCE_QUOTES);
+        for(let field of customFields){
+            field.key = field.idCustomField;
+            campos.push(field);
+        }
+    }catch(ex){return;}
+
 
     renderDefaultForm();
     renderNoteForm();
@@ -189,85 +199,13 @@ async function renderDefaultForm(){
     
     for(let campo of campos){
         // adiciona campo
-        switch(campo.key){
-            case 'description':
-            case 'instructions':
-                $('#inputs-row').append(`
-                    <div class="col-12">
-                        <div class="input-group mb-3">
-                            <label for="input-${campo.key}">${campo.label}</label>
-                            <div class="w-100">
-                                <div class="input-container">
-                                    <textarea maxlength="500" id="input-${campo.key}" type="text" class="input-default"></textarea>
-                                    <small class="input-message"></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `);
-                break;
-            default:
-                $('#inputs-row').append(`
-                    <div class="col-12">
-                        <div class="input-group mb-3">
-                            <label for="input-${campo.key}">${campo.label}</label>
-                            <div class="w-100">
-                                <div class="input-container">
-                                    <input maxlength="50" id="input-${campo.key}" type="text" class="input-default">
-                                    <small class="input-message"></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `);
-                break;
-        }
-
-        // define valor do campo
-        switch(campo.key){
-            case 'price':
-                $(`#input-${campo.key}`).val(parseFloat(result[campo.key]).toLocaleString('pt-br',{minimumFractionDigits: 2}));
-                break;
-            default:
-                $(`#input-${campo.key}`).val(result[campo.key]);
-                break;
-        }
         
+        renderInput(campo,result);
     }
-
-    // MÁSCARAS
-    $('#input-phone')
-        .attr('data-mask',"phone")
-        .attr('disabled',"true")
-        .attr('data-type','phone')
-        .attr('data-optional','true')
-        .addClass('disabled','true');
-        
-    $('#input-name')
-        .attr('disabled',"true")
-        .attr('data-optional','true')
-        .addClass('disabled','true');
-        
-    $('#input-instructions').attr('data-optional','true');    
-    
-    $('#input-price')
-    .attr('data-mask',"money")
-    .attr('data-optional','true');
 
     maskInputs();
 
-    $('[id^="input-"]').each(function(){
-        if($(this).attr('data-optional') != 'true'){
-            const inputGroup = $(this).closest('.input-group');
-
-            const label = inputGroup.find(' > label');
-
-            if(label.attr('data-required') == 'true') return;
-
-            label.attr('data-required',true);
-            label.html(`<b>${label.text()}*</b>`); 
-        }
-    });
+    renderRequired()
     
 }
 async function renderNoteForm(){

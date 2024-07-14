@@ -12,7 +12,7 @@ function success($response = null,$status = 200){
     if(is_array($response)){
         $response['success'] = true;
     }else{
-        die();
+        $response = [];
     }
 
     die(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -33,7 +33,7 @@ function error($response = null,$status = 500){
         $response['error'] = true;
 
     }else{
-        die($response);
+        $response = [];
     }
 
     die(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -153,4 +153,94 @@ function registraCliente($phone,$name){
     }
 
     return $idClient;
+}
+
+function getCustomFields($tableReference){
+    
+    global $db,$idStore;
+
+    $sql = "SELECT * FROM customFields WHERE tableReference = {$tableReference} AND idStore = '{$idStore}';";
+    if(!$result = mysqli_query($db,$sql)) error('Falha ao buscar campos personalizados');
+    
+    $rows = [];
+    while($row = mysqli_fetch_assoc($result) ) array_push($rows,$row);
+    
+    return $rows;
+
+}
+function getCustomFieldContents($idTableReference){
+    
+    global $db,$idStore;
+
+    $sql = "SELECT cfc.* FROM customFieldContents cfc INNER JOIN customFields cf USING(idCustomField) WHERE cfc.idTableReference = '{$idTableReference}' AND cf.idStore = '{$idStore}';";
+    if(!$result = mysqli_query($db,$sql)) error('Falha ao buscar dados personalizados');
+    
+    $rows = [];
+    while($row = mysqli_fetch_assoc($result) ) {
+        $rows[$row['idCustomField']] = $row['content'];  
+    }
+    
+    return $rows;
+
+}
+
+function insertCustomField($idCustomField,$idTableReference,$content){
+    
+    global $db,$idStore;
+
+
+
+    $idCustomFieldContent = getUUID();
+
+    $sql = "INSERT INTO customFieldContents(
+        idCustomFieldContent,
+        idCustomField,
+        idTableReference,
+        content
+    ) VALUES (
+        ?,
+        ?,
+        ?,
+        ?
+    )";
+
+    $stmt = mysqli_prepare($db, $sql);
+    if (!$stmt) error('Erro ao preparar cadastro');
+
+    // Associação de parâmetros
+    mysqli_stmt_bind_param($stmt, "ssss", 
+        $idCustomFieldContent,
+        $idCustomField,
+        $idTableReference,
+        $content
+    );
+    
+    // Execução da consulta
+    if (!mysqli_stmt_execute($stmt)) error('Erro ao efetuar cadastro');
+
+    return $idCustomFieldContent;
+
+}
+
+function deleteCustomFields($idTableReference){
+    
+    global $db,$idStore;
+
+    $sql = "DELETE FROM customFieldContents
+            WHERE idTableReference = ?
+    ";
+
+    $stmt = mysqli_prepare($db, $sql);
+    if (!$stmt) error('Erro ao preparar operação de limpeza de campos');
+
+    // Associação de parâmetros
+    mysqli_stmt_bind_param($stmt, "s",
+        $idTableReference
+    );
+    
+    // Execução da consulta
+    if (!mysqli_stmt_execute($stmt)) error('Erro ao efetuar limpeza de campos');
+
+    return true;
+
 }

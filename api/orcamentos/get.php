@@ -9,5 +9,13 @@ $sql = "SELECT q.*, c.name, c.phone FROM quotes q INNER JOIN clients c USING(idC
 if(!$result = mysqli_query($db,$sql)) error('Falha ao buscar dados');
 if(mysqli_num_rows($result)< 1) error('Registro não encontrado no sistema',400);
 $row = mysqli_fetch_assoc($result);
+
+$customFieldContents = getCustomFieldContents($idQuote);
+
+$row = [
+    ...$row,
+    ...$customFieldContents
+];
+
 success($row);
 ?>
