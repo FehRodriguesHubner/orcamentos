@@ -96,13 +96,16 @@ CREATE TABLE notes(
 
 CREATE TABLE customFields(
 	idCustomField varchar(36) primary key,
+    idStore varchar(36) not null,
     tableReference int not null,
     label varchar(50) not null,
     required boolean not null,
     searchable boolean not null,
     editable boolean not null,
-    dataType varchar(50),
-    dataMask varchar(50)
+    type varchar(50),
+    createdAt datetime not null default CURRENT_TIMESTAMP(),
+    FOREIGN KEY (idStore) REFERENCES stores(idStore)
+    
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE customFieldContents (
@@ -111,4 +114,4 @@ CREATE TABLE customFieldContents (
     idTableReference varchar(36) not null,
     content text not null,
     FOREIGN KEY (idCustomField) REFERENCES customFields(idCustomField)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
