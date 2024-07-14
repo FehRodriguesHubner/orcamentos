@@ -10,10 +10,10 @@ RewriteRule ^orcamentos/editar/(.*)$     pages/orcamentos/edit.php?id=$1
 
 ## LOJAS
 
-RewriteRule ^lojas/cadastrar/(.*)$      pages/lojas/create.php?id=$1
-RewriteRule ^lojas/editar/(.*)$         pages/lojas/edit.php?id=$1
-
-RewriteRule ^lojas/acessar/(.*)$        pages/grupos/list.php?id=$1
+RewriteRule ^campos-orcamento$                     pages/campos-orcamento/list.php
+RewriteRule ^campos-orcamento/cadastrar$           pages/campos-orcamento/create.php
+RewriteRule ^campos-orcamento/editar/(.*)$         pages/campos-orcamento/edit.php?id=$1
+RewriteRule ^campos-orcamento/acessar/(.*)$        pages/grupos/list.php?id=$1
 
 ## GRUPOS
 
