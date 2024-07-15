@@ -551,6 +551,7 @@ function triggerInputError(inputElement, text = null) {
 
 function cleanInputError(inputElement) {
     let inputContainer = inputElement.closest('.input-container');
+    if(inputContainer == null) return;
     inputContainer.classList.remove('error');
 
     inputContainer.querySelector('.input-message').innerHTML = '';
@@ -661,7 +662,7 @@ async function renderInput(campo,values = null){
         $(`#input-${campo.key}`).attr('placeholder',campo.placeholder);
     }
 
-    if(campo.readonly === true || (campo.editable == 0 && values[campo.key] != null )){
+    if(campo.readonly === true || (values != null && campo.editable == 0 && values[campo.key] != null )){
         $(`#input-${campo.key}`)
         .attr('disabled','true')
         .attr('readonly','true')

@@ -5,8 +5,7 @@ const campos = [
     {label:'Nome do Cliente', key: 'name'},
     {label:'Telefone do Cliente', key: 'phone'},
     {label:'Descrição', key: 'description'},
-    {label:'Valor', key: 'price'},
-    {label:'Ações', key: 'actions'}
+    {label:'Valor', key: 'price'}
 ];
 
 window.addEventListener('DOMContentLoaded', async function () {
@@ -17,7 +16,16 @@ window.addEventListener('DOMContentLoaded', async function () {
     }]);
     renderPageActive(pageSlug);
     ///////////////////////////
+    var customFields;
+    try{
+        customFields = await getCustomFields(TABLE_REFERENCE_QUOTES);
+        for(let field of customFields){
+            field.key = field.idCustomField;
+            campos.push(field);
+        }
+    }catch(ex){return;}
 
+    campos.push({label:'Ações', key: 'actions'});
     renderDefault();
 
 });
@@ -192,42 +200,11 @@ $(function(){
 async function renderDefault(){
     return new Promise(async function(res,rej){
         const dataTablesWrapper = document.querySelector('#datatables-models');
-        var result;
-        try{
-            result = await fetchDefault();
-        }catch(e){
-            res(false);
-            return;
-        }
-        //// TRATAMENTO DOS DADOS ////
-
-        dataTablesWrapper.innerHTML = '';
-
-        let data = result.results;
-        
-        if( data == null || data.length < 1){
-    
-            dataTablesWrapper.classList.remove('card-profile', 'p-lg-4', 'p-md-3', 'p-2')
-    
-            dataTablesWrapper.innerHTML = /*html*/`
-            <div class="d-flex flex-column">
-                <p class="message-on-container mb-4">Nenhum registro até o momento.</p>     
-            </div>
-    
-            `;
-            res(false);
-            Swal.close();
-            
-            return false;
-    
-        }
     
         function montaHTMLTabela(campos){
             var strCampos = ``;
             for(let campo of campos){
-                let strCampo = `
-                    <th> ${campo.label} </th>
-                `;
+                let strCampo = `<th data-key="${campo.key}">${campo.label}</th>`;
                 strCampos += strCampo;
             }
 
@@ -245,115 +222,6 @@ async function renderDefault(){
         }
 
         montaHTMLTabela(campos);
-    
-        for(let index in data){
-    
-            let row = data[index];
-            let strRow = '';
-            let trClass = '';
-
-            switch(parseInt(row['status'])){
-                case 0:
-                    trClass = 'table-danger';
-                    break;
-                case 1:
-                    trClass = '';
-                    break;
-                case 2:
-                    trClass = 'table-warning';
-                    break;
-                case 3:
-                    trClass = 'table-success';
-                    break;
-            }
-
-            for(let campo of campos){
-                let field = '--';
-                let sortValue = null;
-
-                // CUSTOM FIELDS //
-                switch(campo.key){
-                    case 'price':
-                        sortValue = 0;
-                        if (row[campo.key] != null) {
-                            sortValue = row[campo.key];
-                            field = `R$ ${parseFloat(row[campo.key]).toLocaleString('pt-br', { minimumFractionDigits: 2 })}`;
-                        }
-                        break;
-                    case 'createdAt':
-                        if (row[campo.key] != null) {
-                            sortValue = row[campo.key];
-                            field = formatDateTime(row[campo.key]);
-                        }
-                        break;
-                    case 'actions':
-
-                        const btnOpen = `
-                            <button data-action="open" title="Reabrir" data-id="${row.idQuote}" class="btn btn-secondary d-flex justify-content-between align-items-center me-2">
-                                <i class="fa fa-box-archive"></i>
-                            </button>
-                        `;
-
-                        const btnDelete = `
-                            <button data-action="delete" title="Deletar" data-id="${row.idQuote}" class="btn btn-danger d-flex justify-content-between align-items-center me-2">
-                                <i class="fa fa-box-archive"></i>
-                            </button>
-                        `;
-
-                        const btnAprove = `
-                            <button data-action="aprove" title="Aprovar" data-id="${row.idQuote}" class="btn btn-warning d-flex justify-content-between align-items-center me-2">
-                                <i class="fa fa-dollar"></i>
-                            </button>
-                        `;
-
-                        const btnClose = `
-                            <button data-action="close" title="Concluír" data-id="${row.idQuote}" class="btn btn-success d-flex justify-content-between align-items-center me-2">
-                                <i class="fa fa-check"></i>
-                            </button>
-                        `;
-                        
-
-                        field = `
-                        <div class="d-flex justify-content-end">
-                            ${row.status == 0 ? btnOpen     : ''}
-                            ${row.status != 0 ? btnDelete   : ''}
-                            ${row.status == 1 ? btnAprove   : ''}
-                            ${row.status == 2 ? btnClose    : ''}
-
-                            <a title="Editar" href="${baseAdminUrl}${pageSlug}/editar/${row.idQuote}" class="btn btn-info d-flex justify-content-between align-items-center me-2">
-                                <i class="fa fa-eye"></i>
-                            </a>     
-                        </div>
-                        
-                        `;
-
-                        break;
-                    default:
-                        if(row[campo.key] != null ){
-                            field = row[campo.key];
-                        }
-
-                        break;
-                }
-
-                sortValue = sortValue == null ? '' : `data-order="${sortValue}"`;
-
-                let strField = `
-                    <td ${sortValue}>
-                        <div>
-                            ${field}
-                        </div>
-                    </td>`;
-                strRow += strField;
-            }
-
-            dataTablesWrapper.querySelector('tbody').insertAdjacentHTML('beforeend',/*html*/ `
-                <tr class="${trClass}">
-                    ${strRow}
-                </tr>
-            `);
-    
-        }
     
     
         $('#datatables-models table').DataTable({
@@ -373,7 +241,123 @@ async function renderDefault(){
                     Download PDF `,
                     className: 'btn-warning fw-bold'
                 }
-            ]
+            ],
+            columns: campos.map(campo => ({
+                data: campo.key,
+                render: function (data, type, row) {
+                    let field = '--';
+                    switch(campo.key) {
+                        case 'price':
+                            sortValue = 0;
+                            if (row[campo.key] != null) {
+                                sortValue = row[campo.key];
+                                field = `R$ ${parseFloat(row[campo.key]).toLocaleString('pt-br', { minimumFractionDigits: 2 })}`;
+                            }
+                            break;
+                        case 'createdAt':
+                            if (row[campo.key] != null) {
+                                sortValue = row[campo.key];
+                                field = formatDateTime(row[campo.key]);
+                            }
+                            break;
+                        case 'actions':
+                            const btnOpen = `
+                                <button data-action="open" title="Reabrir" data-id="${row.idQuote}" class="btn btn-secondary d-flex justify-content-between align-items-center me-2">
+                                    <i class="fa fa-box-archive"></i>
+                                </button>`;
+                            const btnDelete = `
+                                <button data-action="delete" title="Deletar" data-id="${row.idQuote}" class="btn btn-danger d-flex justify-content-between align-items-center me-2">
+                                    <i class="fa fa-box-archive"></i>
+                                </button>`;
+                            const btnAprove = `
+                                <button data-action="aprove" title="Aprovar" data-id="${row.idQuote}" class="btn btn-warning d-flex justify-content-between align-items-center me-2">
+                                    <i class="fa fa-dollar"></i>
+                                </button>`;
+                            const btnClose = `
+                                <button data-action="close" title="Concluír" data-id="${row.idQuote}" class="btn btn-success d-flex justify-content-between alinhamentos-center me-2">
+                                    <i class="fa fa-check"></i>
+                                </button>`;
+                            field = `
+                            <div class="d-flex justify-content-end">
+                                ${row.status == 0 ? btnOpen : ''}
+                                ${row.status != 0 ? btnDelete : ''}
+                                ${row.status == 1 ? btnAprove : ''}
+                                ${row.status == 2 ? btnClose : ''}
+                                <a title="Editar" href="${baseAdminUrl}${pageSlug}/editar/${row.idQuote}" class="btn btn-info d-flex justify-content-between align-items-center me-2">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                            </div>`;
+                            break;
+                        default:
+                            if(row[campo.key] != null ) {
+                                field = row[campo.key];
+                            }else{
+                                field = '--';
+                            }
+                            break;
+                    }
+
+                    return field;
+
+                    if (campo.key === 'actions') {
+                        // Renderizar as ações aqui
+                        const btnOpen = `
+                            <button data-action="open" title="Reabrir" data-id="${row.idQuote}" class="btn btn-secondary d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-box-archive"></i>
+                            </button>`;
+                        const btnDelete = `
+                            <button data-action="delete" title="Deletar" data-id="${row.idQuote}" class="btn btn-danger d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-box-archive"></i>
+                            </button>`;
+                        const btnAprove = `
+                            <button data-action="aprove" title="Aprovar" data-id="${row.idQuote}" class="btn btn-warning d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-dollar"></i>
+                            </button>`;
+                        const btnClose = `
+                            <button data-action="close" title="Concluír" data-id="${row.idQuote}" class="btn btn-success d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-check"></i>
+                            </button>`;
+        
+                        return `
+                        <div class="d-flex justify-content-end">
+                            ${row.status == 0 ? btnOpen : ''}
+                            ${row.status != 0 ? btnDelete : ''}
+                            ${row.status == 1 ? btnAprove : ''}
+                            ${row.status == 2 ? btnClose : ''}
+                            <a title="Editar" href="${baseAdminUrl}${pageSlug}/editar/${row.idQuote}" class="btn btn-info d-flex justify-content-between align-items-center me-2">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        </div>`;
+                    }
+                    return data;
+                }
+            })),
+            createdRow: function (row, data, dataIndex) {
+                let trClass = '';
+                switch (parseInt(data.status)) {
+                    case 0:
+                        trClass = 'table-danger';
+                        break;
+                    case 1:
+                        trClass = '';
+                        break;
+                    case 2:
+                        trClass = 'table-warning';
+                        break;
+                    case 3:
+                        trClass = 'table-success';
+                        break;
+                }
+                $(row).addClass(trClass);
+            },
+            ajax: {
+                url: `${apiUrl}/${pageSlug}/list.php`, // URL do endpoint da sua API
+                type: 'POST', // Tipo de requisição (pode ser GET ou POST)
+                dataSrc: function (json) {
+                    return json.data; // Certifique-se de que os dados estão sendo retornados corretamente
+                }
+            },
+            serverSide: true, // Ativar paginação via backend
         });
     
 
