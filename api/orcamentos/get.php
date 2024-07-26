@@ -12,9 +12,17 @@ $row = mysqli_fetch_assoc($result);
 
 $customFieldContents = getCustomFieldContents($idQuote);
 
+$timestampCreatedAt = strtotime($row['createdAt']);
+$dataEmissao = date('d/m/Y H:i',$timestampCreatedAt);
+$dataValidade = date('d/m/Y',strtotime('+30 days'));
+
 $row = [
     ...$row,
-    ...$customFieldContents
+    ...$customFieldContents,
+
+    "dataEmissao" => $dataEmissao,
+    "dataValidade" => $dataValidade,
+    "codReferencia" => $timestampCreatedAt
 ];
 
 success($row);

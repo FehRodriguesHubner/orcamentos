@@ -7,7 +7,7 @@ const campos = [
     {label:'Nome do Cliente', key: 'name', readonly:true},
     {label:'Telefone do Cliente', key: 'phone', type: FIELD_TYPE_PHONE, readonly:true}
 ];
-
+var content = null;
 
 window.addEventListener('DOMContentLoaded', async function () {
     renderUserDataReplace();
@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', async function () {
         }
     }catch(ex){return;}
 
-
+    console.log(campos);
     renderDefaultForm();
     renderNoteForm();
 
@@ -117,6 +117,46 @@ $(function(){
 
     });
 
+    $('#btnOrcamento').on('click', function(){
+        let dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal;
+        
+        dataEmissao = content.dataEmissao;
+        dataValidade = content.dataValidade;
+        codReferencia = content.codReferencia;
+        nome = content.name;
+        telefone = content.phone;
+
+        descricao = content.description;
+
+        if(content.status >= 2){
+            descricao += ` <br/><br/> ` + content.instructions;
+            dataValidade = null;
+        }
+
+        let price = content.price;
+        if(price == null) {
+            price = 0; 
+        }
+        valorTotal = valor = 'R$ '+parseFloat(price).toLocaleString('pt-br',{minimumFractionDigits: 2});
+
+        let htmlOS = templateOS({
+            values:content,
+            dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal
+        });
+
+        // Create a new window object
+        const newTab = window.open('', '_blank');
+
+        // Set the document content of the new tab to the HTML string
+        newTab.document.open();
+        newTab.document.write(htmlOS);
+        newTab.document.close();
+
+        // Focus on the newly opened tab
+        newTab.focus();
+
+    });
+
     $(document).on('click','[data-deletar-note]',async function(){
         const idNote = $(this).attr('data-id');
         dispatchPopup('warning','Atenção','Tem certeza que deseja excluir essa nota?',{showCancelButton:true,cancelButtonText:'Cancelar',confirmButtonText:'Deletar'}).then(async function(res){
@@ -195,6 +235,7 @@ async function renderDefaultForm(){
         return false;
     }
 
+    content = result;
     
     
     for(let campo of campos){
@@ -238,4 +279,127 @@ async function renderNoteForm(){
     }
     notesRow.fadeIn();
 
+}
+function templateOS(dados){
+    const {dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal, values} = dados;
+
+    let camposExibir = '';
+
+    for(let campo of campos){
+        if(campo.searchable == 1 && values[campo.key]){
+            camposExibir += `
+             <p><strong>${campo.label}:</strong> ${values[campo.key]}</p>
+            `;
+        }
+    }
+
+    let htmlValidade = dataValidade != null ? `<p><strong>Validade:</strong> ${dataValidade}</p>` : '';
+
+    return `
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Serviço</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            margin-bottom:5px;
+        }
+        .detalhes{
+            margin-bottom:2px;
+            text-align:center;
+        }
+        .divisor{
+            padding-bottom: 10px;
+            width:100%;
+            heigth:10px;
+            border-bottom: 2px solid #333;
+            margin-bottom:30px;
+        }
+        .info {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+            .img{
+            width:100%;
+            display:flex;
+            justify-content:center;
+            }
+            .img img{
+                height: 80px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="img">
+            <img  src="${baseAdminUrl}img/logo.png" />
+        </div>
+        <div class="detalhes">
+            <p> Ferreira - Manutenção em ar condicionado automotivo </p>
+            <p> (51) 99885-7080 </p>
+        </div>
+        <h1>Ordem de Serviço</h1>
+        
+
+        <div class="divisor"></div>
+
+        <div style="display: flex; justify-content: space-between;">
+            <div class="info">
+                <p><strong>Data de emissão:</strong> ${dataEmissao}</p>
+                <p><strong>Cód. Referência:</strong> ${codReferencia}</p>
+                ${htmlValidade}
+                ${camposExibir}
+            </div>
+
+            <div class="info" style="text-align: end;">
+                    <p><strong>Nome:</strong> ${nome}</p>
+                    <p><strong>Contato:</strong> ${telefone}</p>
+                </div>
+        </div>
+        
+        <h2>Detalhes do Serviço</h2>
+        <td>${descricao}</td>
+        <div class="info" style="display: flex; justify-content: space-between; margin-top:10px;">
+            <h3><strong>Total:</strong></h3>
+            <h3 style="color:green;"><strong>${valorTotal}</strong></h3>
+        </div>
+        <div class="info" style="display: flex; justify-content: space-between; margin-top:20px;">
+            ${htmlValidade}
+        </div>
+        <script>
+            print();
+        </script>
+    </div>
+</body>
+</html>
+
+
+    `;
 }

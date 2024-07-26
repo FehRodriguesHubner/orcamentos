@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../config/init-config.php';
 
         <section class="wrapper-contents">
             <?php require_once __DIR__ . '/../../template/header.phtml'; ?>
-            <section class="main-wrapper-contants d-flex flex-md-row flex-column gap-3">
+            <section class="main-wrapper-contants d-flex flex-lg-row flex-column gap-3">
                 <div class="card-profile form-wrapper">
                     <header class="d-flex p-4 pb-2 flex-column">
                         <div class="back-to d-flex align-items-center">
@@ -100,33 +100,53 @@ require_once __DIR__ . '/../../config/init-config.php';
                         </footer>
                     </form>
                 </div>
-                <div class="card-profile form-wrapper">
-                    <header class="d-flex p-4 pb-2 flex-column">
-                        <div class="back-to d-flex align-items-center">
-                            <span class="card-container-title">Anotações</span>
-                        </div>
-                    </header>
-                                        
-                    <form id="form-notes" class="mt-3">
-                        <div class="wrapper-infos-form">
-                            <section class="p-3 pt-md-0 pt-0 p-md-4">
-                                <div class="row" id="notesRow">
-                                </div>
-                                <div class="input-group">
-                                    <div class="input-container w-100">
-                                        <textarea id="txtNote" placeholder="Faça aqui uma nova anotação..." class="input-default input-note w-100"></textarea>
-                                        <small class="input-message"></small>
+                <div class="d-flex flex-column gap-3">
+                    <div class="card-profile form-wrapper">
+                        <header class="d-flex p-4 pb-2 flex-column">
+                            <div class="back-to d-flex align-items-center">
+                                <span class="card-container-title">Anotações</span>
+                            </div>
+                        </header>
+                                            
+                        <form id="form-notes" class="mt-3">
+                            <div class="wrapper-infos-form">
+                                <section class="p-3 pt-md-0 pt-0 p-md-4">
+                                    <div class="row" id="notesRow">
                                     </div>
-                                </div>
+                                    <div class="input-group">
+                                        <div class="input-container w-100">
+                                            <textarea id="txtNote" placeholder="Faça aqui uma nova anotação..." class="input-default input-note w-100"></textarea>
+                                            <small class="input-message"></small>
+                                        </div>
+                                    </div>
+                                    
+                                </section>
+                                <footer class="d-flex justify-content-end pt-md-0 pt-0 p-3 p-md-4">
+                                    <button type="submit" class="btn btn-success">Enviar anotação</button>
+                                </footer>
                                 
-                            </section>
-                            <footer class="d-flex justify-content-end pt-md-0 pt-0 p-3 p-md-4">
-                                <button type="submit" class="btn btn-success">Enviar anotação</button>
-                            </footer>
-                            
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-profile form-wrapper">
+                        <header class="d-flex p-4 pb-2 flex-column">
+                            <div class="back-to d-flex align-items-center">
+                                <span class="card-container-title">Ações</span>
+                            </div>
+                        </header>
+                                          
+                        <div class="mt-3">
+                            <div class="wrapper-infos-form">
+                                <section class="d-flex pt-md-0 pt-0 p-3 p-md-4">
+                                    <button id="btnOrcamento" class="btn btn-secondary">
+                                        <i class="fa fa-download"></i> &nbsp; Gerar & Baixar Guia 
+                                    </button>                    
+                                </section>
+                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
+
             </section>
         </section>
     </main>
