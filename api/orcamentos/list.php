@@ -41,7 +41,7 @@ $sqlData = "SELECT
     FROM quotes q INNER JOIN clients c USING(idClient)
     LEFT JOIN customFieldContents cfc ON cfc.idTableReference = q.idQuote
     LEFT JOIN customFields cf ON cfc.idCustomField = cf.idCustomField
-    {$where} LIMIT {$start}, {$length}";
+    {$where} GROUP BY q.idQuote ORDER BY q.createdAt DESC LIMIT {$start}, {$length}";
 $resultData = mysqli_query($db, $sqlData);
 $rows = [];
 while($row = mysqli_fetch_assoc($resultData)){
