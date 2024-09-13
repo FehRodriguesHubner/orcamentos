@@ -3,7 +3,7 @@
 require_once(__DIR__ . '/../config/https-redirect.php');
 
 // debug
-if($PHP_DEBUG == true){ error_reporting(E_ALL);ini_set('display_errors', 1);}
+if($PHP_DEBUG == true){ error_reporting(E_ALL);ini_set('display_errors', 1);}else{error_reporting(0);ini_set('display_errors', 0);}
 
 // sessão
 require_once(__DIR__ . '/../config/session-config.php');
