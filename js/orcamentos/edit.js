@@ -153,7 +153,12 @@ $(function(){
         
         let priceServices = 0;
         if(services != null){
-            services = JSON.parse(services);
+            let services;
+            try{
+                services = JSON.parse(services);
+            }catch(e){
+                services = [];
+            }
             if(services.length > 0){
                 for(let service of services){
                     if(service.price > 0 ){
