@@ -3,7 +3,7 @@ const pageName = 'Orçamentos';
 const campos = [
     {label:'Descrição do problema (Visível ao cliente na O.S)', key: 'description', type: FIELD_TYPE_TEXTAREA},
     {label:'Detalhamento de serviço (NÃO visível ao cliente na O.S)', key: 'instructions', type: FIELD_TYPE_TEXTAREA, required:false},
-    {label:'Valor do orçamento', key: 'price', type:FIELD_TYPE_MONEY},
+    {label:'Valor do orçamento', key: 'price', type:FIELD_TYPE_MONEY, required:false},
     {label:'Nome do Cliente', key: 'name'},
     {label:'Telefone do Cliente', key: 'phone', type: FIELD_TYPE_PHONE}
 ];
@@ -66,6 +66,26 @@ $(function(){
         const id = $('#get_id').val();
         jsonCampos.id = id;
 
+        let services = [];
+        $('[data-servico]').each(function(){
+            let desc = $(this).find('[name="desc"]').val().trim();
+            let price = $(this).find('[name="price"]').val().trim();
+            price = price.replaceAll('.','');
+            price = price.replaceAll(',','.');
+            price = parseFloat(price);
+
+
+            if(desc.trim() != ''){
+                services.push({
+                    desc,
+                    price
+                });
+            }
+
+        });
+
+        jsonCampos.services = services;
+
         // REQUISIÇÃO
         popupLoading();
 
@@ -108,6 +128,12 @@ $(function(){
         }
         //////////
 
+    });
+
+
+    $('#btnAddService').on('click', function(){
+        appendService();
+        maskInputs();
     });
 
 })
@@ -165,6 +191,9 @@ async function renderDefaultForm(){
         
         renderInput(campo);
     }
+
+
+    appendService();
 
     maskInputs();
 

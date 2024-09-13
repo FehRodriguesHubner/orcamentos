@@ -353,6 +353,37 @@ function maskInputs(){
     });
 }
 
+function appendService(service){
+
+    let desc = '';
+    let price = '';
+
+    if(service != null){
+        desc = service.desc != null ? service.desc : '';
+        price = service.price != null ? parseFloat(service.price).toLocaleString('pt-br',{minimumFractionDigits: 2}) : '';
+    }
+
+    $('#servicesContainer').append(`
+        <div data-servico class="col-12 mb-3">
+            <div class="row g-2 mb-3">
+                <div class="col-md-8">
+                    <div class="input-group ">
+                        <label for="">Descrição</label>
+                        <textarea style="height:60px" name="desc" placeholder="Digite aqui..." class="input-default">${desc}</textarea>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <label for="">Valor (R$)</label>
+                        <input type="text" data-mask="money" value="${price}" name="price" class="input-default" placeholder="Ex.: 1.500,50">
+                    </div>
+                </div>
+            </div>
+            <div class="divider w-75"></div>
+        </div>
+    `);
+}
+
 function renderRequired(){
     $('[id^="input-"]').each(function(){
         if($(this).attr('data-optional') != 'true'){

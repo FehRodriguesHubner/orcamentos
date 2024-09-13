@@ -1,8 +1,9 @@
 const pageSlug = 'orcamentos';
 const pageName = 'Orçamentos';
 const campos = [
-    {label:'Abertura', key: 'createdAt'},
     {label:'Nome do Cliente', key: 'name'},
+    {label:'Status', key: 'status'},
+    {label:'Abertura', key: 'createdAt'},
     {label:'Telefone do Cliente', key: 'phone'},
     {label:'Descrição', key: 'description'},
     {label:'Valor', key: 'price'}
@@ -247,6 +248,31 @@ async function renderDefault(){
                 render: function (data, type, row) {
                     let field = '--';
                     switch(campo.key) {
+                        case 'status':
+                            switch (parseInt(row[campo.key])) {
+                                case 0:
+                                    field = '<b>Cancelado</b>';
+                                    break;
+                                case 1:
+                                    field = '<b>Em aberto</b>';
+                                    break;
+                                case 2:
+                                    field = '<b>Andamento</b>';
+                                    break;
+                                case 3:
+                                    field = '<b>Concluído</b>';
+                                    break;
+                            }
+                            break;
+                        case 'description':
+                            if (row[campo.key] != null) {
+                                field = row[campo.key];
+
+                                if(row[campo.key].length > 35){
+                                    field = row[campo.key].substring(0, 35) + "...";;
+                                }
+                            }
+                            break;
                         case 'price':
                             sortValue = 0;
                             if (row[campo.key] != null) {

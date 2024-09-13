@@ -12,12 +12,17 @@ $name       = $json['name'];
 // orcamento
 $description = $json['description'];
 $instructions = $json['instructions'];
+$services = $json['services'];
 $price = $json['price'];
 if(!empty($price)){
     $price = str_replace('.','',$price);
     $price = str_replace(',','.',$price);
 }else{
     $price = null;
+}
+
+if($services != null){
+    $services = json_encode($services,JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
 validate([
@@ -48,13 +53,15 @@ $sql = "INSERT INTO quotes(
     status,
     description,
     instructions,
-    price
+    price,
+    services
 ) VALUES(
     ?,
     ?,
     ?,
     ?,
     1,
+    ?,
     ?,
     ?,
     ?
@@ -64,14 +71,15 @@ $stmt = mysqli_prepare($db, $sql);
 
 if ($stmt) {
     // Associação de parâmetros
-    mysqli_stmt_bind_param($stmt, "sssssss", 
+    mysqli_stmt_bind_param($stmt, "ssssssss", 
         $idQuote,
         $idStore,
         $idUser,
         $idClient,
         $description,
         $instructions,
-        $price
+        $price,
+        $services
     );
     // Execução da consulta
     if (!mysqli_stmt_execute($stmt)) {
@@ -89,7 +97,6 @@ $customFields = getCustomFields($tableReference);
 $sql = "SELECT idCustomFieldContent 
     FROM customFieldContents 
     WHERE idTableReference = '{$idQuote}'
-    AND idCustomField = '{$idCustomField}'
 ;";
 if(!$result = mysqli_query($db,$sql)) error('Falha ao buscar dados personalizados');
 $currentCustomFields = [];

@@ -94,6 +94,21 @@ require_once __DIR__ . '/../../config/init-config.php';
                             
                         </div>
                         <div class="divider"></div>
+                        <div class="wrapper-infos-form">
+                            <section class="p-3 p-md-4">
+                                <span class="card-container-title pb-3">Serviços e valores</span>
+
+                                <div class="mb-4"></div>
+
+                                <div id="servicesContainer" class="row">
+
+                                </div>
+                                <button id="btnAddService" type="button" class="btn btn-success"> <i class="fa fa-plus"></i> Adicionar serviço</button>
+                            </section>
+
+                            <div class="divider"></div>
+                            
+                        </div>
                         <footer class="d-flex justify-content-between p-3 p-md-4">
                             <button data-btn-back type="button" class="button-default border-blue-800 color-blue-800">Cancelar</button>
                             <button type="submit" class="button-default bg-blue color-white">Atualizar</button>

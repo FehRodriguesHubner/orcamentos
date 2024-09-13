@@ -8,10 +8,13 @@ mysqli_begin_transaction($db);
 $idQuote = $json['id'];
 $description = $json['description'];
 $instructions = $json['instructions'];
+$services = $json['services'];
 $price = $json['price'];
 if(!empty($price)){
     $price = str_replace('.','',$price);
     $price = str_replace(',','.',$price);
+}else{
+    $price = null;
 }
 
 
@@ -20,20 +23,26 @@ validate([
     $description
 ]);
 
+if($services != null){
+    $services = json_encode($services,JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
 $sql = "UPDATE quotes SET 
     description = ?, 
     instructions = ?, 
-    price = ? 
+    price = ?,
+    services = ?
     WHERE idQuote = ? AND idStore = ?";
 
 $stmt = mysqli_prepare($db, $sql);
 
 if ($stmt) {
     // Associação de parâmetros
-    mysqli_stmt_bind_param($stmt, "sssss", 
+    mysqli_stmt_bind_param($stmt, "ssssss", 
         $description,    
         $instructions,    
         $price,    
+        $services,
         $idQuote,    
         $idStore
     );

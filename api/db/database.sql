@@ -73,6 +73,7 @@ CREATE TABLE quotes(
     status int not null default 1,
     description text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci not null,
     instructions text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    services longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     price float,
 
     createdAt datetime not null default CURRENT_TIMESTAMP(),

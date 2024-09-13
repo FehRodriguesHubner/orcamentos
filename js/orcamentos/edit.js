@@ -3,7 +3,7 @@ const pageName = 'Orçamentos';
 const campos = [
     {label:'Descrição do problema (Visível ao cliente na O.S)', key: 'description', type: FIELD_TYPE_TEXTAREA},
     {label:'Detalhamento de serviço (NÃO visível ao cliente na O.S)', key: 'instructions', type: FIELD_TYPE_TEXTAREA, required:false},
-    {label:'Valor do orçamento', key: 'price', type:FIELD_TYPE_MONEY},
+    {label:'Valor do orçamento', key: 'price', type:FIELD_TYPE_MONEY, required:false},
     {label:'Nome do Cliente', key: 'name', readonly:true},
     {label:'Telefone do Cliente', key: 'phone', type: FIELD_TYPE_PHONE, readonly:true}
 ];
@@ -65,6 +65,25 @@ $(function(){
         const id = $('#get_id').val();
         jsonCampos.id = id;
 
+        let services = [];
+        $('[data-servico]').each(function(){
+            let desc = $(this).find('[name="desc"]').val().trim();
+            let price = $(this).find('[name="price"]').val().trim();
+            price = price.replaceAll('.','');
+            price = price.replaceAll(',','.');
+            price = parseFloat(price);
+
+
+            if(desc.trim() != ''){
+                services.push({
+                    desc,
+                    price
+                });
+            }
+
+        });
+
+        jsonCampos.services = services;
         // REQUISIÇÃO
         popupLoading();
 
@@ -85,7 +104,7 @@ $(function(){
         }
 
         dispatchPopup('success','Pronto!','Atualização realizada com sucesso.').then(function(){
-            history.back();
+            window.location.reload();
         });
 
     });
@@ -118,14 +137,34 @@ $(function(){
     });
 
     $('#btnOrcamento').on('click', function(){
-        let dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal;
+        let dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal, services;
         
         dataEmissao = content.dataEmissao;
         dataValidade = content.dataValidade;
         codReferencia = content.codReferencia;
+        services = content.services;
         nome = content.name;
         telefone = content.phone;
 
+        let price = content.price;
+        if(price == null) {
+            price = 0; 
+        }
+        
+        let priceServices = 0;
+        if(services != null){
+            services = JSON.parse(services);
+            if(services.length > 0){
+                for(let service of services){
+                    if(service.price > 0 ){
+                        priceServices += service.price;
+                    }
+                }
+            }
+        }else{
+            services = [];
+        }
+        
         descricao = content.description;
 
         if(content.status >= 2){
@@ -133,14 +172,12 @@ $(function(){
             dataValidade = null;
         }
 
-        let price = content.price;
-        if(price == null) {
-            price = 0; 
-        }
-        valorTotal = valor = 'R$ '+parseFloat(price).toLocaleString('pt-br',{minimumFractionDigits: 2});
+        valorTotal = price > priceServices ? price : priceServices;
+        valorTotal = valor = 'R$ '+parseFloat(valorTotal).toLocaleString('pt-br',{minimumFractionDigits: 2});
 
         let htmlOS = templateOS({
             values:content,
+            services,
             dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal
         });
 
@@ -172,6 +209,12 @@ $(function(){
                 Swal.close();
             }
         });
+    });
+
+    $('#btnAddService').on('click', function(){
+        appendService();
+        maskInputs();
+
     });
 
 })
@@ -244,6 +287,20 @@ async function renderDefaultForm(){
         renderInput(campo,result);
     }
 
+    if(result.services != null){
+
+        let services = JSON.parse(result.services);
+
+        if(services.length > 0){
+            for(let service of services){
+                appendService(service);
+            }
+        }
+    }else{
+        appendService();
+
+    }
+
     maskInputs();
 
     renderRequired()
@@ -281,7 +338,29 @@ async function renderNoteForm(){
 
 }
 function templateOS(dados){
-    const {dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal, values} = dados;
+    const {dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal, values, services} = dados;
+
+    let servicesExibir = '';
+
+    for(let campo of services){
+        servicesExibir += `
+            <tr>
+                <td>
+                    ${campo.desc}
+                </td>
+                <td style="text-align:end;white-space:nowrap">
+                    ${campo.price != null ? 'R$ ' + parseFloat(campo.price).toLocaleString('pt-br',{minimumFractionDigits: 2}) : '--'}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="divisor"></div>
+                </td>
+            </tr>
+        `;
+    }
+
+    ///////////////
 
     let camposExibir = '';
 
@@ -337,8 +416,11 @@ function templateOS(dados){
             border-collapse: collapse;
             margin-top: 20px;
         }
+        table *{
+            border:none;
+        }
         th, td {
-            border: 1px solid #ccc;
+            /*border: 1px solid #ccc;*/
             padding: 8px;
             text-align: left;
         }
@@ -386,6 +468,13 @@ function templateOS(dados){
         
         <h2>Detalhes do Serviço</h2>
         <td>${descricao}</td>
+
+        <table>
+            <tbody>
+            ${servicesExibir}
+            </tbody>
+        </table>
+
         <div class="info" style="display: flex; justify-content: space-between; margin-top:10px;">
             <h3><strong>Total:</strong></h3>
             <h3 style="color:green;"><strong>${valorTotal}</strong></h3>

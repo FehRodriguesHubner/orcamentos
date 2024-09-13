@@ -24,7 +24,7 @@ session_destroy();
     <link rel="stylesheet" href="<?php echo $cdn?>css/styles.css">
     <link rel="stylesheet" href="<?php echo $cdn?>css/auth-styles.css">
 
-    <title>Agência GAS - Admin Login</title>
+    <title>Admin Login</title>
     <link rel="apple-touch-icon" sizes="180x180" href="<?php echo $url;?>apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="<?php echo $url;?>favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="<?php echo $url;?>favicon-16x16.png">
@@ -37,7 +37,7 @@ session_destroy();
 <body>
     <input type="hidden" id="url" value="<?php echo $url;?>"/>
     <div id="page-loader" class="loader-wrapper d-flex justify-content-center align-items-center vw-100 vh-100 flex-column">
-        <img class="logo-loader" src="<?php echo $cdn;?>img/logo-colorido.png" alt="Logo Agência GAS"/>
+        <img class="logo-loader" src="<?php echo $cdn;?>img/logo-colorido.png" alt="Logo"/>
     </div>
 
     <main>
@@ -46,7 +46,7 @@ session_destroy();
                 <section class="form-box">
                     <!-- LOGO 
                     <a href="<?php echo $cdn?>" class="logo">
-                        <img width="213" src="<?php echo $cdn;?>img/logo-color.png" alt="Logo Agência GAS"/>
+                        <img width="213" src="<?php echo $cdn;?>img/logo-color.png" alt="Logo"/>
                     </a>-->
                     <div class="form-content d-flex flex-column">
                         <!-- TITLE -->
