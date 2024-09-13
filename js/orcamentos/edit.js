@@ -288,8 +288,12 @@ async function renderDefaultForm(){
     }
 
     if(result.services != null){
-
-        let services = JSON.parse(result.services);
+        let services;
+        try{
+            services = JSON.parse(result.services);
+        }catch(e){
+            services = [];
+        }
 
         if(services.length > 0){
             for(let service of services){
