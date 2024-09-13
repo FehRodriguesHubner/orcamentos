@@ -154,11 +154,15 @@ $(function(){
         let priceServices = 0;
         if(services != null){
             let services;
+
             try{
                 services = JSON.parse(services);
             }catch(e){
                 services = [];
             }
+
+            console.log(services);
+
             if(services.length > 0){
                 for(let service of services){
                     if(service.price > 0 ){
@@ -166,6 +170,7 @@ $(function(){
                     }
                 }
             }
+
         }else{
             services = [];
         }
@@ -173,7 +178,6 @@ $(function(){
         descricao = content.description;
 
         if(content.status >= 2){
-            descricao += ` <br/><br/> ` + content.instructions;
             dataValidade = null;
         }
 
@@ -182,7 +186,7 @@ $(function(){
 
         let htmlOS = templateOS({
             values:content,
-            services,
+            services:services,
             dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal
         });
 
@@ -350,23 +354,25 @@ function templateOS(dados){
     const {dataEmissao,dataValidade, codReferencia, nome, telefone, descricao, valor, valorTotal, values, services} = dados;
 
     let servicesExibir = '';
-
-    for(let campo of services){
-        servicesExibir += `
-            <tr>
-                <td>
-                    ${campo.desc}
-                </td>
-                <td style="text-align:end;white-space:nowrap">
-                    ${campo.price != null ? 'R$ ' + parseFloat(campo.price).toLocaleString('pt-br',{minimumFractionDigits: 2}) : '--'}
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="divisor"></div>
-                </td>
-            </tr>
-        `;
+    console.log(services,'2');
+    if((typeof services == 'object')){
+        for(let campo of services){
+            servicesExibir += `
+                <tr>
+                    <td>
+                        ${campo.desc}
+                    </td>
+                    <td style="text-align:end;white-space:nowrap">
+                        ${campo.price != null ? 'R$ ' + parseFloat(campo.price).toLocaleString('pt-br',{minimumFractionDigits: 2}) : '--'}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="divisor"></div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 
     ///////////////
@@ -454,7 +460,11 @@ function templateOS(dados){
         </div>
         <div class="detalhes">
             <p> Ferreira - Manutenção em ar condicionado automotivo </p>
+            <p> Walter Prestes Ferreira - ME </p>
+            <p> CNPJ: 20.182.892/0001-04</p>
             <p> (51) 99885-7080 </p>
+            <p> Rua: Lorena, 33 - Bairro: Primavera - NH </p>
+
         </div>
         <h1>Ordem de Serviço</h1>
         
@@ -476,7 +486,7 @@ function templateOS(dados){
         </div>
         
         <h2>Detalhes do Serviço</h2>
-        <td>${descricao}</td>
+        <p style="white-space: pre-wrap;">${descricao}</p>
 
         <table>
             <tbody>
